@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="The Account Testing Platform for Creators. Test your content on 25-100 Instagram accounts simultaneously and discover which ones get 2-5x better organic reach.">
+
+    <!-- Open Graph / Social -->
+    <meta property="og:title" content="INSTA420 - Find Instagram Accounts Where Your Content Thrives">
+    <meta property="og:description" content="Test your content on multiple accounts, identify winners with proven reach, own them forever.">
+    <meta property="og:image" content="https://insta420.com/og-image.jpg">
+    <meta property="og:type" content="website">
+
+    <!-- Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <title>INSTA420 - Find Instagram Accounts Where Your Content Thrives</title>
+
+    <!-- Critical CSS inline -->
+    <style>
+        /* CSS Reset & Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Brand Colors */
+            --primary: #8B5CF6;
+            --primary-dark: #7C3AED;
+            --primary-light: #A78BFA;
+            --secondary: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+
+            /* Neutral Colors */
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+
+            /* Spacing */
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --spacing-2xl: 4rem;
+
+            /* Typography */
+            --font-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-system);
+            font-size: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+            line-height: 1.6;
+            color: var(--gray-800);
+            background: white;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: clamp(2rem, 1.5rem + 2.5vw, 3.5rem);
+            line-height: 1.2;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
+            line-height: 1.3;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.75rem;
+        }
+
+        h3 {
+            font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.75rem);
+            line-height: 1.4;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (min-width: 40.0625em) { /* 641px+ */
+            .container {
+                padding-left: 2rem;
+                padding-right: 2rem;
+                max-width: 48rem;
+            }
+        }
+
+        @media (min-width: 64.0625em) { /* 1025px+ */
+            .container {
+                max-width: 75rem;
+            }
+        }
+
+        @media (min-width: 90.0625em) { /* 1441px+ */
+            .container {
+                max-width: 87.5rem;
+            }
+        }
+
+        /* Section Spacing */
+        .section {
+            padding-top: clamp(3rem, 2rem + 5vw, 6rem);
+            padding-bottom: clamp(3rem, 2rem + 5vw, 6rem);
+        }
+
+        .section-alt {
+            background: var(--gray-50);
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+            transform: translateZ(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            min-height: 60px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav {
+            display: none;
+        }
+
+        @media (min-width: 64.0625em) {
+            .nav {
+                display: flex;
+                gap: 2rem;
+                align-items: center;
+            }
+
+            .nav a {
+                color: var(--gray-700);
+                text-decoration: none;
+                font-weight: 500;
+                transition: color 0.2s;
+            }
+
+            .nav a:hover {
+                color: var(--primary);
+            }
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            padding: 12px 24px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap;
+            text-decoration: none;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            touch-action: manipulation;
+            transform: translateZ(0);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-large {
+            min-height: 54px;
+            padding: 16px 32px;
+            font-size: 1.125rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding-top: 80px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="none"/><circle cx="30" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .hero h1 {
+            color: white;
+        }
+
+        .hero-subheadline {
+            font-size: clamp(1.125rem, 1rem + 0.8vw, 1.5rem);
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 40.0625em) {
+            .hero-cta-group {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+
+        .trust-line {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        @media (min-width: 40.0625em) {
+            .trust-line {
+                flex-direction: row;
+                gap: 1.5rem;
+            }
+        }
+
+        .trust-line span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Features Grid */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 40.0625em) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 64.0625em) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 2rem;
+            }
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 8px;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (min-width: 64.0625em) {
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .stat {
+            text-align: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-value {
+            font-size: clamp(2rem, 1.5rem + 1.5vw, 3rem);
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+
+        /* Pricing */
+        .pricing-grid {
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 40.0625em) {
+            .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 64.0625em) {
+            .pricing-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .pricing-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            border: 2px solid var(--gray-200);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            box-shadow: 0 10px 40px rgba(139, 92, 246, 0.2);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .pricing-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-features li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--secondary);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* FAQ */
+        .faq-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .faq-question {
+            font-weight: 600;
+            font-size: 1.125rem;
+            margin-bottom: 0.75rem;
+            color: var(--gray-900);
+        }
+
+        .faq-answer {
+            color: var(--gray-700);
+            line-height: 1.7;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--gray-900);
+            color: var(--gray-300);
+            padding: 3rem 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: 1fr;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 64.0625em) {
+            .footer-content {
+                grid-template-columns: 2fr 1fr 1fr 1fr;
+            }
+        }
+
+        .footer-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-light);
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: var(--gray-300);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-800);
+            font-size: 0.875rem;
+        }
+
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-primary {
+            color: var(--primary);
+        }
+
+        .text-secondary {
+            color: var(--secondary);
+        }
+
+        .text-muted {
+            color: var(--gray-700);
+        }
+
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 2rem; }
+
+        .mt-2 { margin-top: 1rem; }
+        .mt-4 { margin-top: 2rem; }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Accessibility */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus styles */
+        *:focus {
+            outline: 3px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" role="banner">
+        <div class="container">
+            <div class="header-inner">
+                <a href="#" class="logo" aria-label="INSTA420 Home">INSTA420</a>
+                <nav class="nav" role="navigation" aria-label="Main navigation">
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#faq">FAQ</a>
+                    <a href="#start" class="btn btn-primary">Get Started</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main">
+        <!-- Hero Section -->
+        <section class="hero" id="hero" aria-labelledby="hero-title">
+            <div class="container">
+                <div class="hero-content animate-fade-in-up">
+                    <h1 id="hero-title">Find Instagram Accounts Where Your Content Thrives</h1>
+                    <p class="hero-subheadline">
+                        Test your content on 25-100 accounts simultaneously. Discover which ones get 2-5x better organic reach. Own them forever.
+                    </p>
+                    <div class="hero-cta-group">
+                        <a href="#pricing" class="btn btn-primary btn-large">Start Testing</a>
+                        <a href="#how-it-works" class="btn btn-secondary btn-large">Watch 2-min Video</a>
+                    </div>
+                    <div class="trust-line">
+                        <span>✓ Trusted by 10,000+ creators</span>
+                        <span>✓ No bots, no fake followers</span>
+                        <span>✓ 90-day guarantee</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Problem Section -->
+        <section class="section" id="problem" aria-labelledby="problem-title">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <h2 id="problem-title">Why Is Your Reach Unpredictable?</h2>
+                    <p class="text-muted" style="max-width: 800px; margin: 0 auto;">
+                        You create quality content. You spend hours. You follow "best practices."
+                        But your reach is catastrophic — 3-8% of people see your posts.
+                    </p>
+                </div>
+
+                <div class="grid">
+                    <!-- Pain Point 1 -->
+                    <div class="card">
+                        <div class="card-icon">🎰</div>
+                        <h3>The Account Lottery Effect</h3>
+                        <p>
+                            Instagram distributes organic reach unequally between accounts — this is documented data.
+                            Identical content can get:
+                        </p>
+                        <ul>
+                            <li>3.5% reach on one account</li>
+                            <li>18% reach on another account</li>
+                        </ul>
+                        <p><strong>Difference: 500%.</strong> It's not your content. It's the account lottery.</p>
+                    </div>
+
+                    <!-- Pain Point 2 -->
+                    <div class="card">
+                        <div class="card-icon">⏰</div>
+                        <h3>Wasted Time & Effort</h3>
+                        <p>
+                            You spend hours creating content, and minimal people see it. This isn't sustainable.
+                        </p>
+                        <ul>
+                            <li>Creating content: 5-10 hours/week</li>
+                            <li>Result: 2-8% reach (96% of audience DOESN'T SEE)</li>
+                        </ul>
+                        <p>Organic reach dropped 73-80% since 2020. Engagement fell 479% in the last year.</p>
+                    </div>
+
+                    <!-- Pain Point 3 -->
+                    <div class="card">
+                        <div class="card-icon">😓</div>
+                        <h3>False Attribution & Self-Doubt</h3>
+                        <p>
+                            Most creators think the problem is their content. They:
+                        </p>
+                        <ul>
+                            <li>Rework content again and again</li>
+                            <li>Try "new strategies" every week</li>
+                            <li>Doubt their talent</li>
+                            <li>Experience burnout and frustration</li>
+                        </ul>
+                        <p><strong>Reality:</strong> 52% of creators feel burnout. 37% consider quitting their profession.</p>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p style="font-size: 1.25rem; font-weight: 600; color: var(--primary);">
+                        <strong>The Truth: It's not you. It's your ACCOUNT.</strong>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Insight Section -->
+        <section class="section section-alt" id="insight" aria-labelledby="insight-title">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <h2 id="insight-title">Instagram Evaluates Accounts, Not Just Content</h2>
+                    <p class="text-muted" style="max-width: 800px; margin: 0 auto;">
+                        Every account has a hidden "Trust Score" / "Health Score" that determines your organic reach.
+                        You can't see it. But it determines your success.
+                    </p>
+                </div>
+
+                <div class="grid">
+                    <div class="card">
+                        <h3>Account History</h3>
+                        <ul>
+                            <li>Previous violations (even minor)</li>
+                            <li>Previous mass unfollows/follows</li>
+                            <li>Previous spam reports</li>
+                            <li>Age of account</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3>Engagement Patterns</h3>
+                        <ul>
+                            <li>Authenticity of interactions</li>
+                            <li>Follow/unfollow ratios</li>
+                            <li>Comment quality</li>
+                            <li>Time between actions</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3>Content Signals</h3>
+                        <ul>
+                            <li>Duplicate content flags</li>
+                            <li>Copyright strikes</li>
+                            <li>Community guidelines issues</li>
+                            <li>Original vs reposted content ratio</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3>Network Quality</h3>
+                        <ul>
+                            <li>Follower authenticity</li>
+                            <li>Connection patterns</li>
+                            <li>Geographic consistency</li>
+                            <li>Device fingerprints</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <h3>The Solution: Systematic Testing</h3>
+                    <p style="max-width: 800px; margin: 0 auto;">
+                        If you could test your content on 100 different accounts simultaneously,
+                        then choose the 5 best performers — would you do it?
+                    </p>
+                    <p style="font-size: 1.25rem; font-weight: 600; color: var(--primary); margin-top: 1rem;">
+                        Instagram gives different accounts different "lottery tickets" for reach.<br>
+                        Most creators guess. We test.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="section" id="how-it-works" aria-labelledby="how-title">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <h2 id="how-title">How INSTA420 Works</h2>
+                    <p class="text-muted">Multi-Account Testing Platform. Human-Operated. Professional Infrastructure.</p>
+                </div>
+
+                <div class="grid">
+                    <!-- Step 1 -->
+                    <div class="card">
+                        <div class="card-icon">📤</div>
+                        <h3>STEP 1: You Provide Content</h3>
+                        <p><strong>Timeline:</strong> Day 0</p>
+                        <p>
+                            Provide us with 15-30 of your posts/videos — any format, any niche.
+                            This can be existing content or new content for testing.
+                        </p>
+                        <p><strong>What We Need:</strong></p>
+                        <ul>
+                            <li>Instagram Reels / Posts / Stories</li>
+                            <li>Minimum 15 pieces</li>
+                            <li>Your captions (optional)</li>
+                            <li>Target audience info (optional)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="card">
+                        <div class="card-icon">⚙️</div>
+                        <h3>STEP 2: Professional Setup</h3>
+                        <p><strong>Timeline:</strong> Days 1-7</p>
+                        <p><strong>What We Do:</strong></p>
+                        <ul>
+                            <li>Create 25-100 accounts (depending on package)</li>
+                            <li>Uniquify each video with internal engine (cropping, color correction, speed adjustments)</li>
+                            <li>Warm up each account 3-7 days with organic activity simulation</li>
+                            <li>Different profiles for each account (unique bios, profile photos)</li>
+                        </ul>
+                        <p><strong>Infrastructure:</strong> Mobile Proxies • Real Android Devices • Residential IPs</p>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="card">
+                        <div class="card-icon">📊</div>
+                        <h3>STEP 3: Systematic Testing</h3>
+                        <p><strong>Timeline:</strong> Days 8-50</p>
+                        <p>
+                            Our team strategically posts your uniquified content across all accounts for 6-8 weeks.
+                        </p>
+                        <p><strong>What We Track:</strong></p>
+                        <ul>
+                            <li>Organic Reach % — how many saw without ads</li>
+                            <li>Engagement Rate — likes, comments, shares, saves</li>
+                            <li>Profile Visits</li>
+                            <li>Follower Growth — natural growth</li>
+                            <li>Explore Appearances</li>
+                            <li>Account Health — shadowban detection</li>
+                        </ul>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="card">
+                        <div class="card-icon">🏆</div>
+                        <h3>STEP 4: Get Winning Accounts</h3>
+                        <p><strong>Timeline:</strong> Days 50-60</p>
+                        <p>
+                            We identify 5-20 accounts with PROVEN better reach (minimum 2x better than average)
+                            and transfer them to you in FULL OWNERSHIP.
+                        </p>
+                        <p><strong>You Receive:</strong></p>
+                        <ul>
+                            <li>Login Credentials for each winning account</li>
+                            <li>Detailed Analytics — why these accounts won</li>
+                            <li>Usage Recommendations</li>
+                            <li>Transition Guide</li>
+                            <li>30-Day Support after delivery</li>
+                        </ul>
+                        <p><strong style="color: var(--primary);">You Own The Accounts. Forever. No Subscription.</strong></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Differentiation -->
+        <section class="section section-alt" id="differentiation" aria-labelledby="diff-title">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <h2 id="diff-title">We're NOT a Growth Service. We're a Testing Platform.</h2>
+                </div>
+
+                <div class="grid">
+                    <div class="card" style="border: 2px solid var(--danger);">
+                        <h3 style="color: var(--danger);">❌ Automation Services</h3>
+                        <p>Jarvee, Inflact, other automation tools use mass bots.</p>
+                        <p><strong>Result:</strong></p>
+                        <ul>
+                            <li>High ban risk (40-60% accounts)</li>
+                            <li>Fake engagement</li>
+                            <li>Violates Instagram ToS</li>
+                            <li>Temporary results</li>
+                        </ul>
+                    </div>
+
+                    <div class="card" style="border: 2px solid var(--danger);">
+                        <h3 style="color: var(--danger);">❌ Growth Services</h3>
+                        <p>Kicksta, UpGrow, other growth services:</p>
+                        <ul>
+                            <li>Rental model (you don't own results)</li>
+                            <li>One account at a time (no testing)</li>
+                            <li>Subscription dependencies</li>
+                            <li>Unpredictable quality</li>
+                        </ul>
+                    </div>
+
+                    <div class="card" style="border: 2px solid var(--danger);">
+                        <h3 style="color: var(--danger);">❌ SMM Panels</h3>
+                        <p>Buy followers/likes services:</p>
+                        <ul>
+                            <li>100% fake (bots)</li>
+                            <li>Harm your account standing</li>
+                            <li>Brands recognize them</li>
+                            <li>Disappear in weeks</li>
+                        </ul>
+                    </div>
+
+                    <div class="card" style="border: 2px solid var(--secondary);">
+                        <h3 style="color: var(--secondary);">✅ INSTA420: Testing Platform</h3>
+                        <p><strong>Key Differentiators:</strong></p>
+                        <ul>
+                            <li>Testing-First approach</li>
+                            <li>Ownership Transfer (not rental)</li>
+                            <li>Multi-Account Simultaneous testing</li>
+                            <li>Data-Driven decisions</li>
+                            <li>Human-Operated (real people, not scripts)</li>
+                            <li>Professional Infrastructure</li>
+                            <li>Content Uniquization process</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Infrastructure -->
+        <section class="section" id="infrastructure" aria-labelledby="infra-title">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <h2 id="infra-title">How We Minimize Risks</h2>
+                    <p class="text-muted">Instagram crackdown on automation is real. We use professional-grade setup.</p>
+                </div>
+
+                <div class="stats mb-4">
+                    <div class="stat">
+                        <div class="stat-value">85-92%</div>
+                        <div class="stat-label">Account Survival Rate</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Real Devices</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">90-Day</div>
+                        <div class="stat-label">Money-Back Guarantee</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">&lt;8%</div>
+                        <div class="stat-label">Refund Rate</div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-icon">📱</div>
+                        <h3>Mobile Proxies</h3>
+                        <p>Each account through mobile proxy with proper geo-location.</p>
+                        <ul>
+                            <li>$5-15 per proxy per month</li>
+                            <li>1-2 accounts per IP maximum</li>
+                            <li>Rotating IPs for natural patterns</li>
+                            <li>Carrier-grade infrastructure</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🔥</div>
+                        <h3>Account Warmup</h3>
+                        <p>3-7 day warmup period per account.</p>
+                        <ul>
+                            <li>Stories viewing</li>
+                            <li>Likes & comments</li>
+                            <li>Following relevant accounts</li>
+                            <li>Natural browsing patterns</li>
+                            <li>Building account 'history'</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">✨</div>
+                        <h3>Content Uniquization</h3>
+                        <p>Our internal engine modifies each video 7-10 ways.</p>
+                        <ul>
+                            <li>Visual: cropping, color, speed, overlays</li>
+                            <li>Audio: pitch, tempo, EQ adjustments</li>
+                            <li>Metadata: complete stripping + re-encoding</li>
+                            <li>Result: 85-95% success avoiding duplicate detection</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">📱</div>
+                        <h3>Real Devices</h3>
+                        <p>Real Android devices with unique fingerprints. Not emulators.</p>
+                        <ul>
+                            <li>300+ unique data points per device</li>
+                            <li>Different models, OS versions</li>
+                            <li>Natural usage patterns</li>
+                            <li>Hardware-level authenticity</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4" style="background: var(--gray-100); padding: 2rem; border-radius: 8px;">
+                    <h3>Risk Transparency</h3>
+                    <p>
+                        Multi-account ownership is allowed by Instagram (up to 5 accounts per email legally).
+                        We do NOT use automation that violates ToS.
+                    </p>
+                    <p>
+                        Instagram may not approve testing at scale. Therefore:
+                    </p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>✅ 90-day money-back guarantee</li>
+                        <li>✅ Full methodology transparency</li>
+                        <li>✅ Legal compliance documentation</li>
+                        <li>✅ Insurance through survival rate metrics</li>
+                    </ul>
+                    <p style="font-weight: 600; color: var(--primary);">
+                        If results don't match — we refund money. No questions asked.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Social Proof -->
+        <section class="section section-alt" id="testimonials" aria-labelledby="testimonials-title">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <h2 id="testimonials-title">Creators Who Found Winning Accounts</h2>
+                </div>
+
+                <div class="grid">
+                    <!-- Testimonial 1 -->
+                    <div class="card">
+                        <h3>Sarah K.</h3>
+                        <p><strong>Niche:</strong> Lifestyle / Productivity</p>
+                        <p><strong>Before:</strong> 3,200 followers, 4% reach</p>
+                        <blockquote style="font-style: italic; border-left: 4px solid var(--primary); padding-left: 1rem; margin: 1rem 0;">
+                            "I thought the problem was my content. Reworked every post 10 times.
+                            INSTA420 showed that my content was fine — just the account had low trust score.
+                            Got 5 fresh accounts. On one reached 35K views — previous max was 400."
+                        </blockquote>
+                        <p><strong>Results:</strong></p>
+                        <ul>
+                            <li>Winning account: 18% average reach (was 4%)</li>
+                            <li>15,000+ followers in 4 months</li>
+                            <li>Brand partnerships doubled</li>
+                            <li>Mental health improved (no more self-doubt)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Testimonial 2 -->
+                    <div class="card">
+                        <h3>Marcus T.</h3>
+                        <p><strong>Niche:</strong> E-commerce / Handmade products</p>
+                        <p><strong>Before:</strong> Spending $500/mo on ads, organic reach dead</p>
+                        <blockquote style="font-style: italic; border-left: 4px solid var(--primary); padding-left: 1rem; margin: 1rem 0;">
+                            "Instagram ads worked but expensive. Organic reach was 2%.
+                            Tested 50 accounts with product content. 7 showed 12-18% reach.
+                            Switched to winning account — cut ad spend 60%, organic traffic compensates."
+                        </blockquote>
+                        <p><strong>Results:</strong></p>
+                        <ul>
+                            <li>60% reduction in ad spend</li>
+                            <li>3x more organic traffic</li>
+                            <li>Better engagement quality</li>
+                            <li>Sustainable growth model</li>
+                        </ul>
+                    </div>
+
+                    <!-- Testimonial 3 -->
+                    <div class="card">
+                        <h3>Emma R.</h3>
+                        <p><strong>Niche:</strong> Photography / Visual Arts</p>
+                        <p><strong>Before:</strong> Suspected shadowban, wasted 18 months</p>
+                        <blockquote style="font-style: italic; border-left: 4px solid var(--primary); padding-left: 1rem; margin: 1rem 0;">
+                            "I tried everything — different hashtags, posting times, content types. Nothing worked.
+                            INSTA420 systematic testing showed my account was 'dead'.
+                            Got 10 fresh accounts with clean slate. One hit 100K reach first week. Game changer."
+                        </blockquote>
+                        <p><strong>Results:</strong></p>
+                        <ul>
+                            <li>100K reach on viral post (previous max: 300)</li>
+                            <li>Portfolio inquiries increased 400%</li>
+                            <li>Partnership with major brand</li>
+                            <li>Confidence restored</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <h3>Average Client Outcomes</h3>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value">80%+</div>
+                            <div class="stat-label">Find ≥5 winning accounts</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">2-5x</div>
+                            <div class="stat-label">Better organic reach</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">&lt;14 days</div>
+                            <div class="stat-label">Delivery time</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">85-92%</div>
+                            <div class="stat-label">Account survival rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing -->
+        <section class="section" id="pricing" aria-labelledby="pricing-title">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <h2 id="pricing-title">Choose Your Testing Package</h2>
+                    <p class="text-muted">
+                        All packages: Account warmup • Content uniquization • Mobile proxies • Real devices • 90-day guarantee
+                    </p>
+                </div>
+
+                <div class="pricing-grid">
+                    <!-- Starter -->
+                    <div class="pricing-card">
+                        <div class="pricing-title">STARTER</div>
+                        <div class="pricing-price">$199</div>
+                        <p style="color: var(--gray-700); margin-bottom: 1rem;">25 Accounts Tested</p>
+                        <ul class="pricing-features">
+                            <li>25 test accounts</li>
+                            <li>15-20 content pieces</li>
+                            <li>5-10 winning accounts</li>
+                            <li>6-8 weeks testing</li>
+                            <li>Basic analytics</li>
+                            <li>Email support</li>
+                            <li>90-day guarantee</li>
+                        </ul>
+                        <a href="#start" class="btn btn-secondary" style="width: 100%;">Get Started</a>
+                        <p style="font-size: 0.875rem; color: var(--gray-700); margin-top: 1rem;">
+                            Best for: Testing the service, limited budget
+                        </p>
+                    </div>
+
+                    <!-- Professional -->
+                    <div class="pricing-card featured">
+                        <div class="pricing-badge">⭐ MOST POPULAR</div>
+                        <div class="pricing-title">PROFESSIONAL</div>
+                        <div class="pricing-price">$399</div>
+                        <p style="color: var(--gray-700); margin-bottom: 1rem;">50 Accounts Tested</p>
+                        <ul class="pricing-features">
+                            <li>50 test accounts</li>
+                            <li>20-30 content pieces</li>
+                            <li>10-20 winning accounts</li>
+                            <li>6-8 weeks testing</li>
+                            <li>Advanced analytics + insights</li>
+                            <li>Priority support</li>
+                            <li>30-min strategy call</li>
+                            <li>90-day guarantee</li>
+                        </ul>
+                        <a href="#start" class="btn btn-primary" style="width: 100%;">Get Started</a>
+                        <p style="font-size: 0.875rem; color: var(--gray-700); margin-top: 1rem;">
+                            Best for: Serious creators, important campaigns
+                        </p>
+                    </div>
+
+                    <!-- Pro -->
+                    <div class="pricing-card">
+                        <div class="pricing-title">PRO</div>
+                        <div class="pricing-price">$799</div>
+                        <p style="color: var(--gray-700); margin-bottom: 1rem;">75 Accounts Tested</p>
+                        <ul class="pricing-features">
+                            <li>75 test accounts</li>
+                            <li>30-40 content pieces</li>
+                            <li>15-25 winning accounts</li>
+                            <li>8-10 weeks testing</li>
+                            <li>Premium analytics + benchmarking</li>
+                            <li>VIP support (4-hour response)</li>
+                            <li>60-min strategy session</li>
+                            <li>Content optimization consultation</li>
+                            <li>90-day guarantee</li>
+                        </ul>
+                        <a href="#start" class="btn btn-secondary" style="width: 100%;">Get Started</a>
+                        <p style="font-size: 0.875rem; color: var(--gray-700); margin-top: 1rem;">
+                            Best for: Multiple niches, agencies, brands
+                        </p>
+                    </div>
+
+                    <!-- Enterprise -->
+                    <div class="pricing-card">
+                        <div class="pricing-title">ENTERPRISE</div>
+                        <div class="pricing-price">$999</div>
+                        <p style="color: var(--gray-700); margin-bottom: 1rem;">100 Accounts Tested</p>
+                        <ul class="pricing-features">
+                            <li>100 test accounts</li>
+                            <li>Unlimited content pieces</li>
+                            <li>20-30 winning accounts</li>
+                            <li>10-12 weeks testing</li>
+                            <li>Full-service analytics + reports</li>
+                            <li>Dedicated account manager</li>
+                            <li>Monthly strategy calls (3 months)</li>
+                            <li>Multi-niche testing (up to 3)</li>
+                            <li>Priority processing</li>
+                            <li>90-day guarantee + extended support</li>
+                        </ul>
+                        <a href="#start" class="btn btn-secondary" style="width: 100%;">Get Started</a>
+                        <p style="font-size: 0.875rem; color: var(--gray-700); margin-top: 1rem;">
+                            Best for: Established creators, high-stakes projects
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="section section-alt" id="faq" aria-labelledby="faq-title">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <h2 id="faq-title">Frequently Asked Questions</h2>
+                </div>
+
+                <div style="max-width: 900px; margin: 0 auto;">
+                    <div class="faq-item">
+                        <div class="faq-question">Q1: "Isn't this against Instagram ToS?"</div>
+                        <div class="faq-answer">
+                            Multi-account ownership is allowed (up to 5 per email). We do NOT use automation that violates ToS.
+                            Our method is human-operated strategic testing with proper infrastructure.
+                            Instagram may not approve scale, but we provide a 90-day guarantee.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">Q2: "Why not just improve my content?"</div>
+                        <div class="faq-answer">
+                            It's not "either-or". Always improve content. BUT: identical content can have 500% variance in reach between accounts.
+                            Find an account that Instagram favors + improve content = best results.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">Q3: "Is this a scam?"</div>
+                        <div class="faq-answer">
+                            We understand skepticism (Instagram growth industry is full of scams). Therefore:
+                            90-day guarantee, real testimonials, transparent methodology, you own accounts after,
+                            real infrastructure documented, free consultation before purchase.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">Q4: "What if my content is bad?"</div>
+                        <div class="faq-answer">
+                            Maybe! And it's good to know. If all accounts show low reach — you have valuable data.
+                            Content needs improvement OR niche has low demand OR format isn't optimal.
+                            In any case — you KNOW, not guess. And even then 3-5 accounts often WORK.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">Q5: "Why is it expensive?"</div>
+                        <div class="faq-answer">
+                            Compare: Social media manager $500-2K/mo recurring, Instagram ads $300-1K/mo unclear ROI,
+                            Trial-and-error yourself 6-12 months wasted. INSTA420: $199-999 ONE-TIME,
+                            own accounts forever, know what works, 6-8 weeks delivery. Most clients ROI from first successful campaign.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">Q6: "How long does it take?"</div>
+                        <div class="faq-answer">
+                            6-8 weeks from start to delivery. Week 1: setup + warmup, Weeks 2-7: active testing,
+                            Week 8: analysis + delivery. Guarantee &lt;14 weeks maximum. If longer — discount or refund.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Guarantee -->
+        <section class="section" id="guarantee" aria-labelledby="guarantee-title">
+            <div class="container">
+                <div class="text-center" style="max-width: 800px; margin: 0 auto;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">✓</div>
+                    <h2 id="guarantee-title">90-Day Money-Back Guarantee</h2>
+                    <p style="font-size: 1.25rem; font-weight: 600; margin-bottom: 2rem;">
+                        If we don't find accounts with minimum 2x better reach — 100% refund.
+                    </p>
+                    <p>
+                        We're confident in our methodology. If results don't match within 90 days after delivery —
+                        just write. No questions asked. Full refund.
+                    </p>
+                    <p style="font-weight: 600; margin-top: 2rem;">
+                        Why 90 days?
+                    </p>
+                    <p>
+                        Real results need time. You have enough time to test winning accounts and make sure they work.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="section section-alt" id="start" aria-labelledby="final-cta-title">
+            <div class="container">
+                <div class="text-center">
+                    <h2 id="final-cta-title">Stop Guessing. Start Testing.</h2>
+                    <p style="font-size: 1.25rem; margin-bottom: 2rem;">
+                        Join 10,000+ creators who found winning accounts and are growing organically.
+                    </p>
+                    <div class="hero-cta-group" style="margin-bottom: 2rem;">
+                        <a href="#pricing" class="btn btn-primary btn-large">Start Testing Now</a>
+                        <a href="mailto:hello@insta420.com" class="btn btn-secondary btn-large">Free Consultation</a>
+                    </div>
+                    <div class="trust-line" style="justify-content: center;">
+                        <span>✅ 10,000+ Creators</span>
+                        <span>✅ 85-92% Success Rate</span>
+                        <span>✅ &lt;14 Days Delivery</span>
+                        <span>✅ 90-Day Guarantee</span>
+                        <span>✅ No Bots, No Risk</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources -->
+        <section class="section" id="resources" aria-labelledby="resources-title">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <h2 id="resources-title">Learn More About Instagram Algorithm</h2>
+                </div>
+
+                <div class="grid">
+                    <div class="card">
+                        <h3>The Account Lottery Effect Explained</h3>
+                        <p>Deep dive into why Instagram distributes reach unequally and what you can do about it.</p>
+                        <a href="#" class="btn btn-secondary" style="margin-top: 1rem;">Read Article</a>
+                    </div>
+
+                    <div class="card">
+                        <h3>Why Your Reach Dropped 80%</h3>
+                        <p>Understanding the algorithmic changes and proven strategies to recover your organic reach.</p>
+                        <a href="#" class="btn btn-secondary" style="margin-top: 1rem;">Read Article</a>
+                    </div>
+
+                    <div class="card">
+                        <h3>Content vs Account Quality</h3>
+                        <p>Data-driven analysis of what matters more for Instagram success in 2025.</p>
+                        <a href="#" class="btn btn-secondary" style="margin-top: 1rem;">Read Article</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <div class="footer-brand">INSTA420</div>
+                    <p>The Account Testing Platform for Creators</p>
+                    <p style="margin-top: 1rem;">
+                        Find Instagram accounts where your content thrives.
+                        Test systematically, choose winners, own forever.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 style="color: white; font-size: 1rem; margin-bottom: 1rem;">Product</h3>
+                    <ul class="footer-links">
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#testimonials">Case Studies</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 style="color: white; font-size: 1rem; margin-bottom: 1rem;">Company</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 style="color: white; font-size: 1rem; margin-bottom: 1rem;">Connect</h3>
+                    <ul class="footer-links">
+                        <li><a href="mailto:hello@insta420.com">hello@insta420.com</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">LinkedIn</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 INSTA420. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+
+                if (target) {
+                    const headerOffset = 80;
+                    const elementPosition = target.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+
+                    history.pushState(null, null, this.getAttribute('href'));
+                }
+            });
+        });
+
+        // Header scroll effect
+        let lastScroll = 0;
+        const header = document.querySelector('.header');
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+
+            if (currentScroll <= 0) {
+                header.style.boxShadow = 'var(--shadow-sm)';
+            } else {
+                header.style.boxShadow = 'var(--shadow-md)';
+            }
+
+            lastScroll = currentScroll;
+        });
+
+        // Animation on scroll
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card, .stat').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Track CTA clicks (placeholder for analytics)
+        document.querySelectorAll('.btn-primary').forEach(btn => {
+            btn.addEventListener('click', () => {
+                console.log('CTA clicked:', btn.textContent);
+                // Add your analytics tracking here
+                // gtag('event', 'cta_click', { 'button_text': btn.textContent });
+            });
+        });
+    </script>
+</body>
+</html>
