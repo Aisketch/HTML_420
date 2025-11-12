@@ -1,0 +1,860 @@
+# Asset Optimization для Mobile First SPA: практичний посібник 2024-2025
+
+**Оптимізація ресурсів є критичною для mobile-first односторінкових додатків**: правильна реалізація дає **50-70% зменшення трафіку, 20-40% покращення LCP, та 75% скорочення Total Blocking Time**. Сучасний стек технологій дозрілий: AVIF підтримується на 95% браузерів, WebP на 97%, variable fonts на 95%, а інструменти оптимізації інтегруються безпосередньо у Vite/Webpack. Найбільші виграші приходять від чотирьох базових практик: використання сучасних форматів (AVIF+WebP для зображень, WOFF2 для шрифтів), стратегічного lazy loading без впливу на LCP елемент, responsive images з обмеженням DPR до 2x на мобільних, та автоматизованої оптимізації у build pipeline. На мобільних мережах 3G кожні заощаджені 100KB дають ~1 секунду швидшого завантаження, що робить цю тему критично важливою для користувацького досвіду.
+
+## Сучасні формати зображень визначають мобільну продуктивність
+
+AVIF став фактичним стандартом для mobile-first додатків у 2024-2025 завдяки **50% кращому стисненню порівняно з JPEG** та 95% підтримці браузерів. WebP залишається обов'язковим fallback з 97% підтримкою та 25-34% кращим стисненням ніж JPEG. JPEG XL показує найкращі результати для high-quality фото (на 10-15% краще AVIF), але з підтримкою лише 13% браузерів залишається експериментальним. Для production у 2024-2025 оптимальна стратегія — **AVIF як primary, WebP як fallback, JPEG/PNG як universal fallback**.
+
+Реальні тести показують драматичні різниці: фото 8192×5464px займає 11MB у JPEG, 7.3MB у JPEG XL (33% економії), та 8.3MB у AVIF (24% економії). Для анімованих GIF різниця ще більша — оригінал 3.1MB зменшується до **79KB у AVIF (97% економії)**. Налаштування якості критичні: для AVIF використовуйте quality 28-32 для фото та 40-50 для UI елементів, для WebP/JPEG — 75-80 для фото. Кожен крок якості вище 85 дає мінімальний візуальний виграш при суттєвому збільшенні розміру файлу.
+
+```html
+<!-- Оптимальна multi-format стратегія -->
+<picture>
+  <source srcset="image.avif" type="image/avif" />
+  <source srcset="image.webp" type="image/webp" />
+  <img src="image.jpg" alt="Опис" width="1200" height="800" />
+</picture>
+```
+
+### Responsive images економлять 45% трафіку на мобільних
+
+Критичне правило mobile-first: **обмежте fidelity до 2x для мобільних пристроїв**, що економить 45% bandwidth на пристроях з 3x DPR. Браузер на iPhone 14 Pro (3x DPR) завантажить 2x зображення замість 3x, зменшуючи трафік без помітної втрати якості на малих екранах. Атрибути width та height обов'язкові для запобігання CLS — відсутність цих атрибутів є найпоширенішою помилкою, що викликає layout shifts.
+
+```html
+<!-- Mobile-first responsive pattern з DPR cap -->
+<picture>
+  <!-- Мобільні: обмеження до 2x (економія 45% на 3x пристроях) -->
+  <source 
+    media="(max-width: 768px)"
+    srcset="
+      image-400.webp 400w,
+      image-800.webp 800w"
+    sizes="100vw" />
+  
+  <!-- Desktop: дозволяємо вищі DPR -->
+  <source 
+    srcset="
+      image-800.webp 800w,
+      image-1600.webp 1600w,
+      image-2400.webp 2400w"
+    sizes="(max-width: 1440px) 80vw, 1200px" />
+  
+  <img src="image-800.jpg" alt="Адаптивне зображення" 
+       width="800" height="600" />
+</picture>
+```
+
+Рекомендовані breakpoints для mobile-first: 320px, 400px, 640px, 768px, 1024px, 1280px, 1920px. Art direction через picture element дозволяє різні crop для мобільних (portrait) та desktop (landscape), покращуючи композицію на малих екранах.
+
+### Lazy loading вимагає хірургічної точності
+
+Native loading="lazy" підтримується на 97%+ браузерів і є найпростішим рішенням, але **критична помилка: ніколи не lazy load LCP елемент**. Real A/B тести показують катастрофічні наслідки: lazy loading усіх зображень дає LCP 2,984ms, вимкнення lazy loading покращує до 2,184ms, але **пропуск above-fold зображень дає LCP 1,759ms — покращення на 41%**. Причина: браузер депріоритизує lazy images, завантажуючи їх після інших ресурсів.
+
+```html
+<!-- ✅ ПРАВИЛЬНО: Пропускаємо LCP елемент -->
+<img src="hero.jpg" loading="eager" fetchpriority="high" 
+     alt="Hero" width="1920" height="1080" />
+
+<!-- ✅ ПРАВИЛЬНО: Lazy для below-fold -->
+<img src="content.jpg" loading="lazy" 
+     alt="Content" width="800" height="600" />
+
+<!-- ❌ НЕПРАВИЛЬНО: Lazy на LCP — втрата 500-1000ms -->
+<img src="hero.jpg" loading="lazy" alt="Hero" />
+```
+
+Для складніших сценаріїв Intersection Observer API дає повний контроль з **75% зменшенням Total Blocking Time**:
+
+```javascript
+const imageObserver = new IntersectionObserver((entries, observer) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const img = entry.target;
+      if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+      if (img.dataset.src) img.src = img.dataset.src;
+      observer.unobserve(img);
+    }
+  });
+}, {
+  rootMargin: '50px 0px',  // Preload 50px перед viewport
+  threshold: 0.01
+});
+
+document.querySelectorAll('img[data-src]').forEach(img => {
+  imageObserver.observe(img);
+});
+```
+
+### Image CDN автоматизують оптимізацію для мобільних
+
+Cloudinary, Imgix та ImageKit пропонують on-the-fly трансформації, але різняться у pricing моделях. **Cloudinary** найкращий для all-in-one рішень з вбудованим storage та офіційними плагінами для WordPress. **Imgix** пропонує найбільший контроль з 200+ параметрами трансформацій, але потребує власний storage. **ImageKit** виграє предсказуваними цінами з безлімітними трансформаціями та master images. Для build-time оптимізації Sharp залишається найшвидшим рішенням (466 MP/s) без per-image costs.
+
+Ключова CDN оптимізація для мобільних — **variable quality based on DPR**: використовуйте q=85 для 1x, q=70 для 2x, q=60 для 3x. Це компенсує збільшення пікселів вищою компресією, економлячи bandwidth без візуальних втрат.
+
+```javascript
+// Vite + Sharp автоматизація
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+
+export default defineConfig({
+  plugins: [
+    ViteImageOptimizer({
+      png: { quality: 80 },
+      jpeg: { quality: 75, progressive: true },
+      webp: { quality: 80 },
+      avif: { quality: 70, effort: 6 },
+      cache: true,
+      logStats: true
+    })
+  ]
+});
+```
+
+## Стратегії завантаження шрифтів визначають perceived performance
+
+FOUT, FOIT та FOFT представляють три філософії завантаження шрифтів з різними trade-offs. **FOIT (Flash of Invisible Text)** ховає текст на 3 секунди поки шрифт завантажується — на мобільних 3G це призводить до 53% abandon rate за даними Google. **FOUT (Flash of Unstyled Text)** показує fallback шрифт миттєво, потім міняє на веб-шрифт — контент читабельний, але layout shift може дезорієнтувати. **FOFT (Flash of Faux Text)** завантажує Roman вагу першою (~20KB), потім додаткові ваги — найкращий компроміс для великих font families, зменшуючи initial payload на 60-80%.
+
+Для мобільних критично розуміти timing: 40KB WOFF2 шрифт на 3G (750 Kbps) завантажується ~400ms, повна font family 200KB потребує 2+ секунди. На цих швидкостях FOIT створює "порожню сторінку" проблему, а FOUT викликає CLS penalties.
+
+### font-display property контролює rendering стратегію
+
+Властивість font-display має п'ять значень з різними block та swap періодами. **swap** — найкращий для мобільного body тексту: показує fallback миттєво (0ms block) та завжди міняє на веб-шрифт (infinite swap). **optional** — найкращий для performance: 100ms block період, але **ніколи не викликає layout shift** — якщо шрифт не завантажився за 100ms, використовується fallback без swap. **fallback** — компроміс з 100ms invisible text та 3-second swap window. **block** — 2-3 секунди invisible text, використовуйте лише для критичних brand шрифтів.
+
+```css
+/* Body text: читабельність критична */
+@font-face {
+  font-family: 'BodyFont';
+  src: url('/fonts/body.woff2') format('woff2');
+  font-display: swap;  /* Завжди показуємо текст */
+}
+
+/* Headers: бренд важливий, але дозволяємо brief invisibility */
+@font-face {
+  font-family: 'HeadlineFont';
+  src: url('/fonts/headline.woff2') format('woff2');
+  font-display: fallback;  /* 100ms invisible, 3s swap */
+}
+
+/* Accent: respect slow connections */
+@font-face {
+  font-family: 'AccentFont';
+  src: url('/fonts/accent.woff2') format('woff2');
+  font-display: optional;  /* Ніколи не викликає CLS */
+}
+```
+
+Core Web Vitals impact суттєвий: **optional** дає 20-30% швидший LCP на slow connections, але swap може викликати 0.05-0.15 CLS. Для мітигації layout shift використовуйте descriptor properties для matching fallback metrics:
+
+```css
+@font-face {
+  font-family: 'CustomFont';
+  src: url('custom.woff2') format('woff2');
+  font-display: swap;
+  ascent-override: 92%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+  size-adjust: 107%;
+}
+```
+
+### Variable fonts економлять 70% bandwidth для мобільних
+
+Variable fonts містять множинні ваги та стилі у **одному файлі** через interpolatable axes: traditional підхід потребує 10 файлів (~400KB) для 5 ваг × 2 стилі, variable font — 1 файл (~120KB). Для мобільних це означає **70% reduction** та єдиний HTTP request замість 4-10. Підтримка досягла 95% браузерів включаючи iOS Safari 11+ та Chrome Android 74+.
+
+```css
+@font-face {
+  font-family: 'Inter';
+  src: url('Inter-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;  /* Continuous range */
+  font-display: swap;
+}
+
+/* Responsive typography з одним файлом */
+h1 {
+  font-weight: 800;  /* Важкий на desktop */
+}
+
+@media (max-width: 768px) {
+  h1 { 
+    font-weight: 600;  /* Легший на mobile — той самий файл */
+  }
+}
+```
+
+Використовуйте variable fonts коли потрібно 3+ ваги (ROI threshold), для responsive typography across breakpoints, або animations з font properties. Залишайтесь на static fonts для single weight, legacy browser support (IE11), або extremely limited character sets.
+
+### Self-hosting переважає для mobile performance та privacy
+
+Modern cache partitioning у Safari та Chrome **eliminated cross-site cache benefits** — Google Fonts більше не кешуються між сайтами. Web Almanac 2022 показує що self-hosted fonts можуть бути швидшими за third-party при правильній реалізації. Self-hosting економить 150-200ms DNS lookup + connection на мобільних 3G, дає повний контроль над font-display, та вирішує GDPR concerns (EU фінансові штрафи за Google Fonts).
+
+```html
+<head>
+  <!-- Оптимальна self-hosting стратегія -->
+  <link rel="preload" 
+        href="/fonts/inter-latin.woff2" 
+        as="font" 
+        type="font/woff2" 
+        crossorigin>
+  
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      font-weight: 400;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153;
+    }
+    
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+  </style>
+</head>
+```
+
+Для Google Fonts обов'язково preconnect до обох origins:
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" 
+      rel="stylesheet">
+```
+
+### Font subsetting досягає 85-92% reduction
+
+Glyphhanger від Zach Leatherman видаляє unused characters з шрифтів. Latin subset дає **70% reduction**, ASCII-only — **85% reduction**, specific page — до **92% reduction** (ризиковано для multi-page sites). Inter font: original 326KB → Latin subset 95KB → US_ASCII 47KB.
+
+```bash
+# Встановлення
+npm install -g glyphhanger
+pip install fonttools brotli
+
+# Знайти used characters на сайті
+glyphhanger http://localhost:3000
+
+# Subset шрифту до цих characters
+glyphhanger --subset=Inter-Regular.woff2 \
+            --formats=woff2 \
+            --LATIN
+
+# Crawl multiple pages
+glyphhanger http://localhost:3000 \
+            --spider \
+            --spider-limit=10 \
+            --subset=*.woff2
+```
+
+unicode-range дозволяє браузеру завантажувати лише потрібні subsets:
+
+```css
+/* Latin Extended — завантажується тільки якщо є ці символи */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/roboto-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF;
+}
+
+/* Latin — базовий набір */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/roboto-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153;
+}
+```
+
+Preload **максимум 1-2 критичні шрифти** — більше конкурує з HTML/CSS/JS за bandwidth. Service Worker caching оптимальний для offline використання та instant subsequent loads.
+
+## SVG оптимізація балансує розмір та функціональність
+
+SVGO досягає **45-50% file size reduction** з правильною конфігурацією, але agressive optimization може зламати анімації. Критично: **завжди зберігайте viewBox** для responsive SVG — видалення viewBox є найпоширенішою помилкою що робить SVG нерозтяжними.
+
+```javascript
+// svgo.config.mjs
+export default {
+  multipass: true,
+  plugins: [
+    {
+      name: 'preset-default',
+      params: {
+        overrides: {
+          removeViewBox: false,  // CRITICAL для responsive
+          cleanupNumericValues: { floatPrecision: 2 }
+        }
+      }
+    },
+    'removeDoctype', 'removeComments', 'removeMetadata',
+    'convertShapeToPath', 'mergePaths'
+  ]
+};
+```
+
+Real-world результати: 197KB → 96KB (51% reduction) з 50% швидшим rendering (36ms → 18ms). SVGOMG (https://jakearchibald.github.io/svgomg/) дає visual preview що запобігає breaking animations, працює offline через ServiceWorker.
+
+### Inline vs external SVG залежить від use case та volume
+
+Cloud Four тестував 1,000 іконок: **img + data URI найшвидший** overall, **inline SVG fastest коли optimized** (< 5KB). Критичні фактори: inline збільшує HTML size та блокує parsing, external дає caching але потребує HTTP requests. На мобільних з HTTP/2 multiplexing external SVG файли завантажуються паралельно без performance hit.
+
+**Decision matrix для mobile-first:**
+
+Використовуйте inline SVG коли:
+- Потрібен CSS styling (fill, stroke, color)
+- JavaScript manipulation required
+- Іконки < 5KB кожна
+- Менше 100 unique icons
+- Animations required
+
+Використовуйте external SVG коли:
+- Та сама іконка на multiple pages (caching win)
+- Великі icon collections (> 100)
+- Bundle size критичний
+- Сильна caching strategy
+
+```html
+<!-- Critical above-fold: inline для instant render -->
+<svg class="logo" viewBox="0 0 100 50" fill="currentColor">
+  <path d="M10 10 L90 10 L50 40 Z"/>
+</svg>
+
+<!-- Non-critical: external з lazy loading -->
+<img src="/icons/share.svg" loading="lazy" alt="Share" 
+     width="24" height="24">
+```
+
+Hybrid strategy оптимальна: inline критичні above-fold SVG у HTML, external для решти з strong caching headers (1 year).
+
+### Symbol sprites зменшують requests на 95%
+
+Symbol/use pattern дає найкращий баланс між performance та maintainability для icon systems. 50 individual SVG файлів (100KB) → 1 sprite з 50 symbols (85KB, 15% savings) **плюс single HTTP request** плюс superior caching.
+
+```html
+<!-- Sprite definition (inline або external) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icon-home" viewBox="0 0 24 24">
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+  </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24">
+    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5..."/>
+  </symbol>
+</svg>
+
+<!-- Usage з currentColor для theming -->
+<svg class="icon" aria-hidden="true">
+  <use href="#icon-home"></use>
+</svg>
+
+<style>
+.icon { width: 24px; height: 24px; fill: currentColor; }
+</style>
+```
+
+10,000 icon test: individual inline ~3.4s Speed Index, symbol sprite ~2.1s Speed Index (**38% faster**). Automation з gulp-svg-sprite або webpack svg-sprite-loader інтегрує у build process.
+
+### SVG animation на мобільних вимагає GPU-accelerated properties
+
+CSS animations з transform та opacity дають найкращу mobile performance з automatic hardware acceleration. SMIL smooth але Safari/Edge compatibility concerns. JavaScript (GSAP) найпотужніший але heavier payload.
+
+```css
+/* ✅ GOOD: GPU-accelerated */
+.animated-svg {
+  will-change: transform, opacity;
+  transform-box: fill-box;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+/* ❌ BAD: Triggers layout, CPU-bound */
+@keyframes bad {
+  from { width: 100px; x: 0; }
+  to { width: 200px; x: 50; }
+}
+```
+
+Performance hierarchy: **transform/opacity** (best) → **fill/stroke** (good) → **simple filters** (okay) → **x/y/width/height/d** (avoid on mobile). Respect prefers-reduced-motion media query, використовуйте Intersection Observer для анімацій лише у viewport, та disable animations на low-end devices (navigator.hardwareConcurrency < 4).
+
+### SVG accessibility потребує proper ARIA patterns
+
+WCAG 2.1 вимагає text alternatives для всіх non-text content. Три patterns based on context:
+
+```html
+<!-- Decorative SVG з текстом поруч -->
+<button>
+  <svg aria-hidden="true" class="icon">
+    <use href="#icon-save"></use>
+  </svg>
+  Зберегти
+</button>
+
+<!-- Icon-only button потребує label -->
+<button aria-label="Зберегти документ">
+  <svg aria-hidden="true" class="icon">
+    <use href="#icon-save"></use>
+  </svg>
+</button>
+
+<!-- Informative SVG потребує role та labelledby -->
+<svg role="img" aria-labelledby="chart-title chart-desc">
+  <title id="chart-title">Sales Data</title>
+  <desc id="chart-desc">Bar chart showing 25% increase in Q4</desc>
+  <rect x="10" y="10" width="50" height="80"/>
+</svg>
+```
+
+Best pattern (95% success across screen readers): `<svg role="img" aria-labelledby="[ID]">` + `<title>` + `<desc>`. Touch targets minimum **44×44px** для WCAG 2.1 compliance.
+
+### Brotli compression дає 15-20% переваги над gzip для SVG
+
+Brotli підтримується на 96.6% браузерів та дає **20-26% кращу компресію** для text files включаючи SVG. Pre-compression на build time оптимальна — генеруйте .br файли поряд з originals, налаштуйте Nginx/Apache для serving.
+
+```nginx
+server {
+  brotli on;
+  brotli_comp_level 6;  # 1-11 (6 optimal для speed/size)
+  brotli_static on;
+  brotli_types text/plain text/css application/javascript image/svg+xml;
+  
+  gzip on;  # Fallback для старих браузерів
+  gzip_vary on;
+  gzip_types text/plain text/css image/svg+xml;
+}
+```
+
+Base64 encoding SVG у CSS **уникайте на мобільних** — 33% size penalty, блокує critical rendering path, no caching benefits. URL-encoded data URIs краще (19% larger, compresses better), але external files з Brotli найефективніші для reusable assets.
+
+## Video optimization вимагає facade patterns та lazy loading
+
+YouTube embed без оптимізації завантажує **1,243KB** перед playback з 21 network requests та 1,366ms Total Blocking Time. lite-youtube-embed facade зменшує до **27KB** (98% reduction), 7 requests, та **0ms TBT** — абсолютна game-changer для mobile performance з **75% LCP improvement**.
+
+```html
+<!-- Standard YouTube embed: 1,243KB overhead -->
+<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+        width="560" height="315"></iframe>
+
+<!-- lite-youtube-embed: 27KB, lazy loads real player on click -->
+<link rel="stylesheet" href="lite-yt-embed.css">
+<script type="module" src="lite-yt-embed.js"></script>
+
+<lite-youtube 
+  videoid="dQw4w9WgXcQ" 
+  playlabel="Play video"
+  params="controls=1&modestbranding=1&rel=0">
+</lite-youtube>
+```
+
+Три video embeds на сторінці: standard 3.6MB, з facade 81KB — **3.5MB savings (97%)**. Privacy-friendly (youtube-nocookie.com), accessible з proper ARIA, customizable parameters.
+
+### Lazy loading video економить 75% Total Blocking Time
+
+Intersection Observer для video дає dramatic performance gains. HTML з data-attributes замість src запобігає eager download, observer завантажує коли video enters viewport.
+
+```javascript
+document.addEventListener("DOMContentLoaded", function() {
+  const lazyVideos = document.querySelectorAll("video.lazy");
+  
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const video = entry.target;
+          video.querySelectorAll('source').forEach(source => {
+            source.src = source.dataset.src;
+          });
+          video.load();
+          video.classList.remove('lazy');
+          observer.unobserve(video);
+        }
+      });
+    });
+    
+    lazyVideos.forEach(video => observer.observe(video));
+  }
+});
+```
+
+```html
+<video class="lazy" controls preload="none" poster="poster.jpg">
+  <source data-src="video.webm" type="video/webm">
+  <source data-src="video.mp4" type="video/mp4">
+  <track kind="captions" src="captions.vtt" srclang="uk" label="Українська" default>
+</video>
+```
+
+Measured results: **TBT 1366ms → 567ms (75% improvement)**, 250-300ms faster content download, initial page load reduction ~200KB per video.
+
+### WebM VP9 plus MP4 H.264 optimal codec strategy
+
+VP9 у WebM контейнері дає **34% кращу компресію** ніж H.264 з підтримкою 95% браузерів (Safari 14.1+ added support). H.264 залишається universal fallback з 100% compatibility. Dual-source strategy забезпечує smaller files для 95% users з fallback для legacy.
+
+```html
+<video controls preload="metadata" poster="poster-optimized.avif">
+  <source src="video.webm" type="video/webm; codecs=vp9,opus">
+  <source src="video.mp4" type="video/mp4; codecs=avc1.42E01E,mp4a.40.2">
+  <track kind="captions" src="captions-uk.vtt" srclang="uk" default>
+</video>
+```
+
+AV1 показує 50% кращу компресію але **no iOS support** та limited mobile hardware decoding. H.265/HEVC 50% краще H.264 але complex licensing та limited Safari/Edge support. Для production 2024-2025: **VP9 primary, H.264 fallback**.
+
+Bitrate recommendations для mobile: 1-2 Mbps для 720p, 4-6 Mbps для 1080p. Використовуйте HandBrake з RF 22-25, 24-30 FPS, видаляйте audio track якщо muted (30% savings).
+
+### Mobile autoplay вимагає muted та playsinline
+
+iOS Safari та Chrome Android **блокують sound autoplay** без user interaction. Requirements для autoplay success: `muted` attribute, `playsinline` attribute (критично для iOS), video visible у viewport, MP4 format (WebM не автоплеїться на iOS).
+
+```javascript
+// React pattern з proper autoplay handling
+const videoRef = useRef(null);
+
+useEffect(() => {
+  if (videoRef.current) {
+    videoRef.current.muted = true;
+    videoRef.current.play().catch(error => {
+      console.log('Autoplay prevented:', error);
+      showPlayButton();  // Fallback UI
+    });
+  }
+}, []);
+
+return (
+  <video ref={videoRef} muted autoPlay loop playsInline>
+    <source src="video.mp4" type="video/mp4" />
+  </video>
+);
+```
+
+Data Saver на mobile Chrome forces `preload="none"`, cellular connections force `preload="metadata"`. Autoplay з sound ніколи не працює без interaction.
+
+### Background video або remove на mobile
+
+Background videos потребують агресивної оптимізації: 2-5MB target file size, 720p resolution max, 10-30 seconds loop length, remove audio entirely. **CSS display:none все ще завантажує video** — використовуйте JavaScript для actual removal на mobile.
+
+```javascript
+// Видаляємо background video на mobile
+if (window.innerWidth < 768) {
+  document.querySelectorAll('.hero__video').forEach(video => {
+    video.remove();  // Actually remove, не лише hide
+  });
+}
+```
+
+Альтернативи для mobile: static poster image як background, CSS gradients, animated WebP/AVIF. Background video на mobile часто погана ідея для mobile-first audience — споживає battery, bandwidth, та може викликати LCP issues.
+
+### Poster images потребують AVIF optimization
+
+Poster images показуються перед video playback та впливають на perceived performance. **AVIF 50% менший за JPEG** з equivalent quality, WebP 27-35% менший. Quality setting: AVIF 50 ≈ WebP/JPEG 90 за PSNR metrics.
+
+```html
+<link rel="preload" href="poster.avif" as="image" fetchpriority="high">
+
+<video controls preload="metadata" poster="poster.jpg" width="1920" height="1080">
+  <source src="video.webm" type="video/webm">
+  <source src="video.mp4" type="video/mp4">
+</video>
+```
+
+Target file size: 100-200KB, match video resolution, використовуйте progressive formats. Picture element для multi-format posterів не підтримується directly, використовуйте JavaScript detection або server-side negotiation.
+
+### preload attribute балансує performance та bandwidth
+
+Три values з різними mobile implications: `none` — no preload (0KB, best для below-fold), `metadata` — load metadata only (~5% file, good для standard videos), `auto` — full download (ignored на mobile з cellular, використовуйте лише для critical above-fold).
+
+```html
+<!-- Standard video: metadata -->
+<video controls preload="metadata" poster="poster.jpg">
+  <source src="video.mp4" type="video/mp4">
+</video>
+
+<!-- Below-fold: none для bandwidth savings -->
+<video controls preload="none" poster="poster.jpg">
+  <source src="video.mp4" type="video/mp4">
+</video>
+
+<!-- Critical hero: auto (ignored на cellular) -->
+<video controls preload="auto" poster="poster.jpg">
+  <source src="video.mp4" type="video/mp4">
+</video>
+```
+
+Chrome mobile з Data Saver forces `none`, cellular connections force `metadata`. iOS Safari ignores `auto` на mobile. Network-aware loading з Connection API:
+
+```javascript
+if ('connection' in navigator) {
+  const connection = navigator.connection;
+  
+  if (connection.effectiveType === '4g' && !connection.saveData) {
+    video.preload = 'metadata';
+  } else {
+    video.preload = 'none';
+  }
+}
+```
+
+**Important**: `autoplay` attribute overrides `preload` — якщо є autoplay, браузер завантажить достатньо для play.
+
+### Video accessibility вимагає captions та keyboard controls
+
+WCAG Level A (minimum) **вимагає captions для всіх prerecorded video**. WebVTT format з proper sync (within 1 second), accuracy 99%+, completeness (all speech + sound effects). Auto-generated captions insufficient без editing.
+
+```html
+<video controls>
+  <source src="video.mp4" type="video/mp4">
+  <track kind="captions" src="captions-uk.vtt" srclang="uk" label="Українська" default>
+  <track kind="captions" src="captions-en.vtt" srclang="en" label="English">
+</video>
+```
+
+Keyboard controls mandatory для WCAG compliance:
+
+```javascript
+video.addEventListener('keydown', (e) => {
+  switch(e.key) {
+    case ' ':
+    case 'k':  // Play/Pause
+      e.preventDefault();
+      video.paused ? video.play() : video.pause();
+      break;
+    case 'ArrowLeft':  // Rewind 5s
+      video.currentTime -= 5;
+      break;
+    case 'ArrowRight':  // Forward 5s
+      video.currentTime += 5;
+      break;
+    case 'm':  // Mute toggle
+      video.muted = !video.muted;
+      break;
+    case 'f':  // Fullscreen
+      video.requestFullscreen();
+      break;
+  }
+});
+```
+
+Touch targets minimum 48×48px для Android, 44×44px для iOS. Caption contrast minimum 4.5:1 для WCAG Level AA compliance.
+
+## Icon systems: SVG sprites перемагають icon fonts у 2024-2025
+
+Індустрійний консенсус shifted decisively до SVG sprites для mobile-first apps. Benchmark data показує **SVG sprites 129ms render time** vs icon fonts 224ms на мобільних. iOS різниця ще драматичніша — sprites 2X faster з 220ms advantage. Android показує 70ms переваги для sprites.
+
+Icon fonts мають fundamentals problems: **accessibility issues** (screen readers confused з Private Use Area Unicode), **FOIT problems** (Flash of Invisible Text), single-color limitation, та anti-aliasing inconsistencies across browsers. SVG sprites дають multi-color support, better accessibility з proper ARIA, no font loading flash, та crisp rendering at all sizes.
+
+### Lucide та Heroicons лідирують у 2024-2025
+
+**Lucide** (1,641 icons) — найкращий для modern apps з **100% automatic tree-shaking**, TypeScript native, zero configuration. Typical bundle: 5-15KB для commonly used icons. **Heroicons** (292 icons) від Tailwind CSS team — perfect tree-shaking, focused high-quality set, 8-12KB typical. **Font Awesome** (2,016+ icons) — most comprehensive але потребує careful tree-shaking (655KB без optimization, ~35KB з proper imports). **Material Icons** (2,500+ icons) — Google design system, variable fonts option, 20-30KB typical.
+
+```typescript
+// Lucide: automatic tree-shaking, zero config
+import { Home, Search, User } from 'lucide-react';
+
+function Navigation() {
+  return (
+    <>
+      <Home size={24} color="blue" strokeWidth={2} />
+      <Search aria-label="Search site" />
+      <User />
+    </>
+  );
+}
+```
+
+Без proper tree-shaking Font Awesome може займати **80% bundle**. Named imports critical: `import { Home } from 'lucide-react'` замість `import * as Icons`. Verify з webpack-bundle-analyzer.
+
+### SVG symbol sprites дають найкращий performance для великих sets
+
+Symbol/use pattern оптимальний для icon systems з 100+ icons. Inline sprites для critical path icons, external sprites з strong caching для larger collections, Service Worker caching для offline use.
+
+```html
+<!-- Inline sprite у HTML head -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icon-home" viewBox="0 0 24 24">
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+  </symbol>
+  <symbol id="icon-user" viewBox="0 0 24 24">
+    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4..."/>
+  </symbol>
+</svg>
+
+<!-- Usage з currentColor inheritance -->
+<button style="color: #e74c3c;">
+  <svg class="icon" aria-hidden="true">
+    <use href="#icon-home"></use>
+  </svg>
+  Home
+</button>
+
+<style>
+.icon { width: 24px; height: 24px; fill: currentColor; }
+</style>
+```
+
+Build automation з vite-plugin-svgr для React або svg-sprite-loader для Webpack. Runtime performance: 10,000 icons test показує symbol sprites 38% faster ніж individual inline SVG.
+
+### Multi-color icons можливі лише з SVG
+
+Icon fonts обмежені single color через CSS `color` property. SVG підтримує multiple fills/strokes, CSS variables для theming, gradients та patterns.
+
+```html
+<svg class="icon-multi" viewBox="0 0 24 24">
+  <path fill="var(--color-primary)" d="M10 20v-6h4v6..."/>
+  <circle stroke="var(--color-secondary)" cx="12" cy="12" r="10"/>
+</svg>
+
+<style>
+.icon-multi {
+  --color-primary: currentColor;
+  --color-secondary: currentColor;
+}
+
+.icon-multi.brand {
+  --color-primary: #2c3e50;
+  --color-secondary: #e74c3c;
+}
+
+@media (prefers-color-scheme: dark) {
+  .icon-multi {
+    --color-primary: #fff;
+    --color-secondary: #ccc;
+  }
+}
+</style>
+```
+
+currentColor дає automatic color inheritance від parent, CSS custom properties дають full theming control, окремі path colors можливі для complex icons.
+
+### Icon accessibility вимагає context-specific ARIA
+
+WCAG Success Criteria 1.1.1 (Level A) та 2.4.4 (Level AA) вимагають text alternatives. Three patterns based on context:
+
+```html
+<!-- Decorative icon з text label -->
+<button>
+  <svg aria-hidden="true" class="icon">
+    <use href="#search"></use>
+  </svg>
+  Пошук
+</button>
+
+<!-- Icon-only button: aria-label required -->
+<button aria-label="Пошук по сайту">
+  <svg aria-hidden="true" class="icon">
+    <use href="#search"></use>
+  </svg>
+</button>
+
+<!-- Informative icon: role="img" з labelledby -->
+<svg role="img" aria-labelledby="title-id">
+  <title id="title-id">Головна</title>
+  <use href="#home"></use>
+</svg>
+```
+
+**Best pattern** (95% success rate): `aria-hidden="true"` на decorative icons, `aria-label` на interactive elements, `role="img"` + `<title>` для informative SVG. Touch targets **minimum 44×44px** з padding якщо visual icon менший.
+
+### Iconify CDN зручний але self-hosting краще для production
+
+Iconify надає 200,000+ icons з 150+ sets через ~25KB framework та on-demand API loading. CloudFlare CDN delivery швидкий, але **external dependency** проблематичний для production mobile apps на 3G. Рекомендація: використовуйте Iconify для prototyping, self-host selected icons для production з control over caching та offline support.
+
+## Практичні рекомендації та mobile-first checklist
+
+**Пріоритет 1: Критичні оптимізації для мобільних**
+- ✅ AVIF primary з WebP/JPEG fallbacks для зображень
+- ✅ WOFF2 exclusively для шрифтів (97% support)
+- ✅ font-display: swap для body text, optional для accents
+- ✅ Lazy loading усіх below-fold assets
+- ✅ **Ніколи lazy load LCP element** — втрата 40% performance
+- ✅ Width/height attributes на всіх зображеннях для CLS prevention
+- ✅ Preload максимум 1-2 критичні ресурси
+
+**Пріоритет 2: Розміри та форматування**
+- ✅ Cap image DPR до 2x на мобільних (45% savings)
+- ✅ Responsive images з mobile-first breakpoints: 320, 400, 640, 768, 1024px
+- ✅ Font subsetting до Latin (70% reduction)
+- ✅ Variable fonts якщо потрібно 3+ weights
+- ✅ SVG optimization з SVGO (keep viewBox!)
+- ✅ Video compression до 2-5MB для backgrounds
+- ✅ lite-youtube-embed для YouTube (98% reduction)
+
+**Пріоритет 3: Build pipeline автоматизація**
+```javascript
+// vite.config.js — Комплексна оптимізація
+import { defineConfig } from 'vite';
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+import svgr from 'vite-plugin-svgr';
+
+export default defineConfig({
+  plugins: [
+    ViteImageOptimizer({
+      png: { quality: 80 },
+      jpeg: { quality: 75, progressive: true },
+      webp: { quality: 80 },
+      avif: { quality: 70, effort: 6 },
+      svgo: {
+        multipass: true,
+        plugins: [{ 
+          name: 'preset-default',
+          params: { overrides: { removeViewBox: false } }
+        }]
+      },
+      cache: true,
+      logStats: true
+    }),
+    svgr({ svgrOptions: { icon: true } })
+  ],
+  build: {
+    assetsInlineLimit: 4096,  // Inline < 4KB
+    rollupOptions: {
+      output: {
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        manualChunks: {
+          'vendor-icons': ['lucide-react']
+        }
+      }
+    }
+  }
+});
+```
+
+**Performance targets для mobile:**
+- LCP < 2.5 секунди (Good)
+- CLS < 0.1 (Good) 
+- FCP < 1.8 секунди (Good)
+- TBT < 200ms (Good)
+- Total image weight < 500KB на initial load
+- Font download time < 400ms на 3G
+- Video lazy loaded below-fold
+
+**Accessibility checklist (WCAG 2.1/2.2):**
+- ✅ Alt text на всіх зображеннях (< 125 characters, descriptive)
+- ✅ aria-hidden="true" на decorative SVG
+- ✅ Captions для всіх video (Level A requirement)
+- ✅ Keyboard controls для video та interactive elements
+- ✅ Touch targets ≥ 44×44px
+- ✅ Color contrast ≥ 4.5:1 для text над зображеннями
+- ✅ Screen reader testing (VoiceOver iOS, TalkBack Android)
+
+**Common anti-patterns що уникати:**
+- ❌ Lazy loading LCP element (40% LCP regression)
+- ❌ Oversized images (10-15x більше bandwidth ніж потрібно)
+- ❌ Відсутність width/height attributes (CLS issues)
+- ❌ PNG для фотографій замість JPEG/WebP
+- ❌ Icon fonts для нових projects (accessibility, performance issues)
+- ❌ Standard YouTube embeds без facades (1.2MB overhead)
+- ❌ Base64 encoding у critical CSS (блокує render)
+- ❌ Видалення viewBox з SVG (breaks responsiveness)
+- ❌ Background videos на mobile без removal strategy
+- ❌ Font families без subsetting (200-400% larger ніж потрібно)
+
+**Testing strategy:**
+- Lighthouse mobile audits (target score > 90)
+- Real device testing на throttled 3G (Fast 3G: 1.6 Mbps)
+- WebPageTest з mobile profile (Moto G4)
+- Core Web Vitals monitoring у production (PageSpeed Insights, CrUX)
+- Bundle analysis (webpack-bundle-analyzer, vite-bundle-visualizer)
+- Screen reader testing (VoiceOver, TalkBack)
+- Network waterfall analysis (identify render-blocking resources)
+
+**Mobile-first optimization дає measurable business impact**: Google дослідження показують що 53% mobile users abandon sites які завантажуються > 3 секунди, кожна секунда затримки зменшує conversions на 20%, та sites з LCP < 2.5s мають 24% вищий engagement. Правильна asset optimization — не optional technical detail, а critical business requirement для mobile-first apps у 2024-2025.
+
+Ключовий takeaway: технології дозріли, інструменти готові, browser support excellent — єдиний бар'єр це implementation discipline. Automatic build pipeline optimization, strategic lazy loading, modern formats з fallbacks, та accessibility-first approach дають dramatic improvements у mobile performance з minimal developer overhead коли properly configured.
